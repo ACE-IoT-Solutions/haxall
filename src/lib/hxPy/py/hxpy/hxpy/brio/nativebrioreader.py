@@ -17,6 +17,33 @@ import pytz
 from .control import BrioControl
 from ..haystack import *
 
+BRIO_CONTROL_MAP = {
+    BrioControl.ctrlNull: "_null",
+    BrioControl.ctrlMarker: "_marker",
+    BrioControl.ctrlNA: "_na",
+    BrioControl.ctrlRemove: "_remove",
+    BrioControl.ctrlFalse: "_false",
+    BrioControl.ctrlTrue: "_true",
+    BrioControl.ctrlNumI2: "_consume_numi2",
+    BrioControl.ctrlNumI4: "_consume_numi4",
+    BrioControl.ctrlNumF8: "_consume_numf8",
+    BrioControl.ctrlRefStr: "_consume_ref_str",
+    BrioControl.ctrlRefI8: "_consume_refi8",
+    BrioControl.ctrlStr: "_consume_str",
+    BrioControl.ctrlUri: "_consume_uri",
+    BrioControl.ctrlDate: "_consume_date",
+    BrioControl.ctrlTime: "_consume_time",
+    BrioControl.ctrlDateTimeI4: "_consume_datetimei4",
+    BrioControl.ctrlDateTimeI8: "_consume_datetimei8",
+    BrioControl.ctrlCoord: "_consume_coord",
+    BrioControl.ctrlBuf: "_consume_buf",
+    BrioControl.ctrlDictEmpty: "_dict_empty",
+    BrioControl.ctrlDict: "_consume_dict",
+    BrioControl.ctrlListEmpty: "_list_empty",
+    BrioControl.ctrlList: "_consume_list",
+    BrioControl.ctrlGrid: "_consume_grid"
+}
+
 
 # >>> numpy.ndarray((2,2), numpy.dtype(">d"), data)
 
@@ -31,7 +58,6 @@ class NativeBrioReader:
         self._pos = 0
         self._intern_strs = {}
         self._intern_tzs = {}
-        self._control_lookup_map = self._prepare_control_lookup()
 
     def avail(self):
         size = len(self._data)
@@ -44,51 +70,43 @@ class NativeBrioReader:
         else:
             raise IOError(f'Expected Dict, not {type(v)}')
     
-    def _prepare_control_lookup(self) ->  dict:
-        """
-        Prepares a lookup map for the control bytes
-        """
-        control_lookup_map = {
-            BrioControl.ctrlNull: lambda: None,
-            BrioControl.ctrlMarker: lambda: Marker(),
-            BrioControl.ctrlNA: lambda: NA(),
-            BrioControl.ctrlRemove: lambda: Remove(),
-            BrioControl.ctrlFalse: lambda: False,
-            BrioControl.ctrlTrue: lambda: True,
-            BrioControl.ctrlNumI2: lambda: self._consume_numi2()[0],
-            BrioControl.ctrlNumI4: lambda: self._consume_numi4()[0],
-            BrioControl.ctrlNumF8: lambda: self._consume_numf8()[0],
-            BrioControl.ctrlRefStr: lambda: self._consume_ref_str(),
-            BrioControl.ctrlRefI8: lambda: self._consume_refi8(),
-            BrioControl.ctrlStr: lambda: self._consume_str(),
-            BrioControl.ctrlUri: lambda: self._consume_uri(),
-            BrioControl.ctrlDate: lambda: self._consume_date(),
-            BrioControl.ctrlTime: lambda: self._consume_time(),
-            BrioControl.ctrlDateTimeI4: lambda: self._consume_datetimei4(),
-            BrioControl.ctrlDateTimeI8: lambda: self._consume_datetimei8(),
-            BrioControl.ctrlCoord: lambda: self._consume_coord(),
-            BrioControl.ctrlBuf: lambda: self._consume_buf(),
-            BrioControl.ctrlDictEmpty: lambda: {},
-            BrioControl.ctrlDict: lambda: self._consume_dict(),
-            BrioControl.ctrlListEmpty: lambda: [],
-            BrioControl.ctrlList: lambda: self._consume_list(),
-            BrioControl.ctrlGrid: lambda: self._consume_grid()
-        }
-        return control_lookup_map
-
     def read_val(self):
         """
         Reads a control byte and dispatches to the appropriate method for decoding
         """
         ctrl = self._u1()
         try:
-            return self._control_lookup_map[ctrl]()
-        except KeyError:
+            return getattr(self, BRIO_CONTROL_MAP[ctrl])()
+        except AttributeError:
             raise NotImplementedError(f'Unsupported data type: {hex(ctrl)} pos={self._pos}')
 
     ##########################################################
     # Decode
     ##########################################################
+
+    def _null(self):
+        return None
+    
+    def _true(self):
+        return True
+    
+    def _false(self):
+        return False
+    
+    def _dict_empty(self):
+        return {}
+    
+    def _list_empty(self):
+        return []
+    
+    def _marker(self):
+        return Marker()
+    
+    def _na(self):
+        return NA()
+    
+    def _remove(self):
+        return Remove()
 
     def _u1(self, expect=None):
         byte = self._data[self._pos]
@@ -103,12 +121,14 @@ class NativeBrioReader:
     def _consume_numi2(self):
         val, = struct.unpack("!h", self._consume(2))
         unit = self._consume_unit()
-        return val, unit
+        return val
+        # return val, unit
 
     def _consume_numi4(self):
         val, = struct.unpack("!i", self._consume(4))
         unit = self._consume_unit()
-        return val, unit
+        # return val, unit
+        return val
 
     def _consume_ref_str(self):
         id = self._decode_str(False)
@@ -123,7 +143,8 @@ class NativeBrioReader:
     def _consume_numf8(self):
         val, = struct.unpack("!d", self._consume(8))
         unit = self._consume_unit()
-        return val, unit
+        # return val, unit
+        return val
 
     def _consume_unit(self):
         s = self._decode_str(False)
