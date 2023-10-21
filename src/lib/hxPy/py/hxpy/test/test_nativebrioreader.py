@@ -7,11 +7,13 @@
 #   19 Jul 2021  Matthew Giannini  Creation
 #
 
+import inspect
 import unittest
 import random
 import sys
 import struct
 import datetime
+import time
 import numpy
 from zoneinfo import ZoneInfo
 
@@ -21,6 +23,13 @@ from hxpy.haystack import *
 
 
 class TestNativeBrioReader(unittest.TestCase):
+    
+    def setUp(self):
+        self.start_time = time.time()
+
+    def tearDown(self):
+        t = time.time() - self.start_time
+        print(f"{self.id()}: {t:.3f} sec")
 
     def test_null(self):
         data = bytes([0x00])
@@ -295,6 +304,12 @@ class TestNativeBrioReader(unittest.TestCase):
         for i, v in enumerate(vals):
             x = r._decode_varint()
             self.assertEqual(v, x)
+    
+    def test_timing(self):
+        for test_name, method in inspect.getmembers(self, predicate=inspect.ismethod):
+            if test_name.startswith("test_") and test_name != "test_timing":
+                for _ in range(1000):
+                    method()
 
 
 # TestNativeBrioReader
