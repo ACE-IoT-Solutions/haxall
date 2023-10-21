@@ -305,9 +305,17 @@ class TestNativeBrioReader(unittest.TestCase):
             x = r._decode_varint()
             self.assertEqual(v, x)
     
+    def test_control_speed(self):
+        data = bytes.fromhex("077fffffffff00") * 1_000_000
+        brio = NativeBrioReader(data)
+        while brio.avail() > 0:
+            value = brio.read_val()
+        self.assertEqual(value, 0x7fff_ffff)
+
+    
     def test_timing(self):
         for test_name, method in inspect.getmembers(self, predicate=inspect.ismethod):
-            if test_name.startswith("test_") and test_name not in ("test_timing", "test_varint"):
+            if test_name.startswith("test_") and test_name not in ("test_timing"):
                 for _ in range(100):
                     method()
 
