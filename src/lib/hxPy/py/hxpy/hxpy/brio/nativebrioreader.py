@@ -24,9 +24,9 @@ BRIO_CONTROL_MAP = {
     BrioControl.ctrlRemove: "_remove",
     BrioControl.ctrlFalse: "_false",
     BrioControl.ctrlTrue: "_true",
-    BrioControl.ctrlNumI2: "_consume_numi2",
-    BrioControl.ctrlNumI4: "_consume_numi4",
-    BrioControl.ctrlNumF8: "_consume_numf8",
+    BrioControl.ctrlNumI2: "_consume_numi2_val",
+    BrioControl.ctrlNumI4: "_consume_numi4_val",
+    BrioControl.ctrlNumF8: "_consume_numf8_val",
     BrioControl.ctrlRefStr: "_consume_ref_str",
     BrioControl.ctrlRefI8: "_consume_refi8",
     BrioControl.ctrlStr: "_consume_str",
@@ -121,14 +121,18 @@ class NativeBrioReader:
     def _consume_numi2(self):
         val, = struct.unpack("!h", self._consume(2))
         unit = self._consume_unit()
-        return val
-        # return val, unit
+        return val, unit
+    
+    def _consume_numi2_val(self):
+        return self._consume_numi2()[0]
 
     def _consume_numi4(self):
         val, = struct.unpack("!i", self._consume(4))
         unit = self._consume_unit()
-        # return val, unit
-        return val
+        return val, unit
+    
+    def _consume_numi4_val(self):
+        return self._consume_numi4()[0]
 
     def _consume_ref_str(self):
         id = self._decode_str(False)
@@ -143,8 +147,10 @@ class NativeBrioReader:
     def _consume_numf8(self):
         val, = struct.unpack("!d", self._consume(8))
         unit = self._consume_unit()
-        # return val, unit
-        return val
+        return val, unit
+    
+    def _consume_numf8_val(self):
+        return self._consume_numf8()[0]
 
     def _consume_unit(self):
         s = self._decode_str(False)
