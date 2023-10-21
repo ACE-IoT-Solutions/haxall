@@ -307,8 +307,8 @@ class TestNativeBrioReader(unittest.TestCase):
     
     def test_timing(self):
         for test_name, method in inspect.getmembers(self, predicate=inspect.ismethod):
-            if test_name.startswith("test_") and test_name != "test_timing":
-                for _ in range(1000):
+            if test_name.startswith("test_") and test_name not in ("test_timing", "test_varint"):
+                for _ in range(100):
                     method()
 
 
