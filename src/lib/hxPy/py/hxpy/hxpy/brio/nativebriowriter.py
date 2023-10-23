@@ -75,50 +75,7 @@ class NativeBrioWriter:
             if self.strict:
                 raise IOError(f'Cannot encode {val} [{type(val)}]')
             return self._write_str(str(val))
-        # if val is None:
-        #     return self._write_null()
-        # t = type(val)
-        # if t is Marker:
-        #     return self._write_marker()
-        # elif t is NA:
-        #     return self._write_na()
-        # elif t is Remove:
-        #     return self._write_remove()
-        # elif t is bool:
-        #     return self._write_bool(val)
-        # elif isinstance(val, (int, numpy.integer)):
-        #     return self._write_int(val)
-        # elif isinstance(val, float):
-        #     return self._write_float(val)
-        # elif t is str:
-        #     return self._write_str(val)
-        # elif t is Ref:
-        #     return self._write_ref(val)
-        # elif t is datetime.date:
-        #     return self._write_date(val)
-        # elif t is datetime.time:
-        #     return self._write_time(val)
-        # elif t is datetime.datetime:
-        #     return self._write_datetime(val)
-        # elif t is pandas.Timestamp:
-        #     return self._write_pandas_timestamp(val)
-        # elif t is bytes:
-        #     return self._write_bytes(val)
-        # elif t is dict:
-        #     return self._write_dict(val)
-        # elif t is list:
-        #     return self._write_list(val)
-        # elif t is Grid:
-        #     return self._write_grid(val)
-        # elif t is numpy.ndarray:
-        #     return self._write_ndarray(val)
-        # elif t is pandas.core.frame.DataFrame:
-        #     return self._write_dataframe(val)
-        # else:
-        #     if self.strict:
-        #         raise IOError(f'Cannot encode {val} [{t}]')
-        #     return self._write_str(str(val))
-
+    
     ##########################################################
     # Encode
     ##########################################################
