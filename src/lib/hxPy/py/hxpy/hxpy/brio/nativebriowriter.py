@@ -27,7 +27,14 @@ BRIO_WRITE_MAP = {
     Remove: "_write_remove",
     bool: "_write_bool",
     int: "_write_int",
-    numpy.integer: "_write_int",
+    numpy.int64: "_write_int",
+    numpy.int32: "_write_int",
+    numpy.int8: "_write_int",
+    numpy.int16: "_write_int",
+    numpy.uint64: "_write_int",
+    numpy.uint32: "_write_int",
+    numpy.uint8: "_write_int",
+    numpy.uint16: "_write_int",
     float: "_write_float",
     str: "_write_str",
     Ref: "_write_ref",
@@ -41,7 +48,6 @@ BRIO_WRITE_MAP = {
     Grid: "_write_grid",
     numpy.ndarray: "_write_ndarray",
     pandas.core.frame.DataFrame: "_write_dataframe"
-
 }
 
 
@@ -63,7 +69,8 @@ class NativeBrioWriter:
 
     def write_val(self, val):
         try:
-            return getattr(self, BRIO_WRITE_MAP[type(val)])(val)
+            val_type = type(val)
+            return getattr(self, BRIO_WRITE_MAP[val_type])(val)
         except AttributeError:
             if self.strict:
                 raise IOError(f'Cannot encode {val} [{type(val)}]')
